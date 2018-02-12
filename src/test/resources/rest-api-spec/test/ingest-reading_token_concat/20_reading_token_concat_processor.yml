@@ -1,0 +1,36 @@
+---
+"Test reading_token_concat processor with defaults":
+  - do:
+      ingest.put_pipeline:
+        id: "my_pipeline"
+        body:  >
+          {
+            "description": "_description",
+            "processors": [
+              {
+                "reading_token_concat" : {
+                  "field" : "field1",
+                  "target_field" : "field2"
+                }
+              }
+            ]
+          }
+  - match: { acknowledged: true }
+
+  - do:
+      index:
+        index: test
+        type: test
+        id: 1
+        pipeline: "my_pipeline"
+        body: {field1: "今日はいい天気だ"}
+
+  - do:
+      get:
+        index: test
+        type: test
+        id: 1
+  - match: { _source.field1: "今日はいい天気だ" }
+  - match: { _source.field2: "キョウハイイテンキダ" }
+
+
